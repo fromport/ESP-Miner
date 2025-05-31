@@ -1,3 +1,5 @@
+
+#include "sha/sha_core.h"
 #include <string.h>
 #include <stdio.h>
 #include <limits.h>
@@ -5,10 +7,11 @@
 #include "utils.h"
 #include "mbedtls/sha256.h"
 
+
 static const double truediffone = 26959535291011309493156476344723991336010898738574164086137773096960.0;
 
 
-void free_bm_job(Bm_Job_t *job) {
+void free_bm_job(bm_job *job) {
     if (!job) return;
     free(job->jobid);
     free(job->extranonce2);
@@ -67,9 +70,9 @@ char *calculate_merkle_root_hash(const char *coinbase_tx, const uint8_t merkle_b
 }
 
 
-Bm_Job_t construct_bm_job(Stratum_Mining_Notify_t *params, const char *merkle_root, const uint32_t version_mask) {
+bm_job construct_bm_job(mining_notify *params, const char *merkle_root, const uint32_t version_mask) {
 	
-    Bm_Job_t new_job = {0}; 
+    bm_job new_job = {0}; 
     
     new_job.version = params->version;
     new_job.starting_nonce = 0;
@@ -126,7 +129,7 @@ char *extranonce_2_generate(uint32_t extranonce_2, uint32_t length)
 }
 
 
-double test_nonce_value(const Bm_Job_t *job, const uint32_t nonce, const uint32_t rolled_version)
+double test_nonce_value(const bm_job *job, const uint32_t nonce, const uint32_t rolled_version)
 {
     uint8_t header[80] = {0};
     uint8_t hash_result[32];
@@ -140,7 +143,7 @@ double test_nonce_value(const Bm_Job_t *job, const uint32_t nonce, const uint32_
 
     esp_sha(SHA2_256, header, 80, hash_result);
     esp_sha(SHA2_256, hash_result, 32, hash_result);
-
+    
     return truediffone / le256todouble(hash_result);
 }
 
